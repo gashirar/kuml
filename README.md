@@ -9,7 +9,7 @@ Kuml is a kubernetes manifest visualization tool.
 ### Source
 
 ```bash
-go get -u github.com/gashirar/kuml/cmd
+go get -u github.com/gashirar/kuml
 ```
 
 ### krew plugin manager.
