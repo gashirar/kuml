@@ -1,0 +1,286 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sample-deployment
+spec:
+  progressDeadlineSeconds: 600
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      deployment: app
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+  template:
+    metadata:
+      labels:
+        deployment: app
+    spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              topologyKey: "blade-name"
+              labelSelector:
+                matchLabels:
+                  deployment: app
+      volumes:
+      - name: adapter-app-config-volume
+        projected:
+          sources:
+          - configMap:
+              name: adapter-app-properties
+      - name: adapter-infra-config-volume
+        projected:
+          sources:
+          - configMap:
+              name: adapter-infra-properties
+      - name: application-app-config-volume
+        projected:
+          sources:
+          - configMap:
+              name: application-app-properties
+      - name: application-infra-config-volume
+        projected:
+          sources:
+          - configMap:
+              name: application-infra-properties
+      - name: log-volume
+        hostPath:
+          path: /APL
+          type: DirectoryOrCreate
+      terminationGracePeriodSeconds: 40
+      restartPolicy: Always
+      dnsPolicy: ClusterFirst
+      schedulerName: default-scheduler
+      securityContext: {}
+      serviceAccountName: sample-serviceaccount
+      containers:
+      - name: adapter
+        image: gashirar/k8s-debug-tools:v1
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8081
+          name: adapter-port
+          protocol: TCP
+        volumeMounts:
+        - name: adapter-app-config-volume
+          mountPath: /etc/adapter/config/app
+        - name: adapter-infra-config-volume
+          mountPath: /etc/adapter/config/infra
+        - name: log-volume
+          mountPath: /log
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "100Mi"
+          limits:
+            cpu: "100m"
+            memory: "100Mi"
+        lifecycle:
+          preStop:
+            exec:
+              command: ["/bin/sh","-c","sleep 10"]
+        livenessProbe:
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 1
+          successThreshold: 1 # libeness must be 1
+          failureThreshold: 1
+          httpGet:
+            path: /liveness
+            port: adapter-port
+            scheme: HTTP
+        readinessProbe:
+          initialDelaySeconds: 5
+          periodSeconds: 10
+          timeoutSeconds: 1
+          successThreshold: 1
+          failureThreshold: 1
+          httpGet:
+            path: /readiness
+            port: adapter-port
+            scheme: HTTP
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        env:
+        - name: SERVER_PORT
+          value: "8081"
+        - name: K8S_UID
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.uid
+        - name: K8S_NODE_NAME
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: spec.nodeName
+        - name: K8S_HOST_IP
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: status.hostIP
+        - name: K8S_POD_NAME
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.name
+        - name: K8S_NAMESPACE
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.namespace
+        - name: K8S_POD_IP
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: status.podIP
+        - name: K8S_SERVICE_ACCOUNT_NAME
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: spec.serviceAccountName
+        - name: K8S_CONTAINER_NAME
+          value: adapter
+        - name: K8S_CPU_REQUEST
+          valueFrom:
+            resourceFieldRef:
+              containerName: app
+              resource: requests.cpu
+              divisor: 1m
+        - name: K8S_CPU_LIMIT
+          valueFrom:
+            resourceFieldRef:
+              containerName: app
+              resource: limits.cpu
+              divisor: 1m
+        - name: K8S_MEMORY_REQUEST
+          valueFrom:
+            resourceFieldRef:
+              containerName: app
+              resource: requests.memory
+              divisor: 1Mi
+        - name: K8S_MEMORY_LIMIT
+          valueFrom:
+            resourceFieldRef:
+              containerName: app
+              resource: limits.memory
+              divisor: 1Mi
+        - name: RESPONSE_DELAY_MSECONDS
+          value: "0"
+      - name: app
+        image: gashirar/k8s-debug-tools:v1
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8082
+          name: api-port
+          protocol: TCP
+        volumeMounts:
+        - name: application-app-config-volume
+          mountPath: /etc/application/config/app
+        - name: application-infra-config-volume
+          mountPath: /etc/application/config/infra
+        - name: log-volume
+          mountPath: /log
+        resources:
+          requests:
+            cpu: "200m"
+            memory: "256Mi"
+          limits:
+            cpu: "200m"
+            memory: "256Mi"
+        lifecycle:
+          preStop:
+            exec:
+              command: ["/bin/sh","-c","sleep 30"]
+        livenessProbe:
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 1
+          successThreshold: 1 # libeness must be 1
+          failureThreshold: 1
+          httpGet:
+            path: /liveness
+            port: api-port
+            scheme: HTTP
+        readinessProbe:
+          initialDelaySeconds: 5
+          periodSeconds: 10
+          timeoutSeconds: 1
+          successThreshold: 1
+          failureThreshold: 1
+          httpGet:
+            path: /readiness
+            port: api-port
+            scheme: HTTP
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        env:
+        - name: SERVER_PORT
+          value: "8082"
+        - name: K8S_UID
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.uid
+        - name: K8S_NODE_NAME
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: spec.nodeName
+        - name: K8S_HOST_IP
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: status.hostIP
+        - name: K8S_POD_NAME
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.name
+        - name: K8S_NAMESPACE
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.namespace
+        - name: K8S_POD_IP
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: status.podIP
+        - name: K8S_SERVICE_ACCOUNT_NAME
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: spec.serviceAccountName
+        - name: K8S_CONTAINER_NAME
+          value: app
+        - name: K8S_CPU_REQUEST
+          valueFrom:
+            resourceFieldRef:
+              containerName: app
+              resource: requests.cpu
+              divisor: 1m
+        - name: K8S_CPU_LIMIT
+          valueFrom:
+            resourceFieldRef:
+              containerName: app
+              resource: limits.cpu
+              divisor: 1m
+        - name: K8S_MEMORY_REQUEST
+          valueFrom:
+            resourceFieldRef:
+              containerName: app
+              resource: requests.memory
+              divisor: 1Mi
+        - name: K8S_MEMORY_LIMIT
+          valueFrom:
+            resourceFieldRef:
+              containerName: app
+              resource: limits.memory
+              divisor: 1Mi

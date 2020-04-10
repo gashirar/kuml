@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: adapter-app-properties
+data:
+  app.properties: |
+    Some app properties for Adapter container.
+
