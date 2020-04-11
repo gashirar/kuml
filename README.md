@@ -61,3 +61,70 @@ In your favorite way.
 -> [PlantUML Web Server](http://www.plantuml.com/plantuml/uml/)
 
 ![Process](./docs/images/uml.png "Process")
+
+### ToDo
+- Workloads Resources
+  - CronJob v1beta1 batch
+    - [x] Element
+    - [x] Link to Job
+  - DaemonSet v1 apps
+    - [ ] Element
+    - [ ] Link to Pod
+  - Deployment v1 apps
+    - [x] Element
+    - [x] Link to ReplicaSet
+  - Job v1 batch
+    - [x] Element
+    - [x] Link to Pod
+  - Pod v1 core
+    - [x] Element
+    - [x] Link to ConfigMap
+    - [x] Link to Secret
+    - [ ] Link to ServiceAccount
+  - ReplicaSet v1 apps
+    - [x] Element
+    - [x] Link to Pod
+  - ReplicationController v1 core
+    - [ ] Element
+    - [ ] Link to Pod
+  - StatefulSet v1 apps
+    - [x] Element
+    - [x] Link to Pod
+- Service Resources
+  - Endpoints v1 core
+    - [ ] Element
+  - Ingress v1beta1 networking.k8s.io
+    - [x] Element
+    - [x] Link to Service
+  - Service v1 core
+    - [x] Element
+    - [x] Link to Pod
+- Config And Storage Resource
+  - ConfigMap v1 core
+    - [x] Element
+  - Secret v1 core
+    - [x] Element
+  - PersistentVolumeClaim v1 core
+    - [ ] Element
+- Metadata Resources
+  - HorizontalPodAutoscaler v1 autoscaling
+    - [x] Element
+    - [x] Link to Deployment
+  - PodDisruptionBudget v1beta1 policy
+    - [x] Element
+    - [x] Link to Pod
+  - PriorityClass v1 scheduling.k8s.io
+    - [ ] Element
+- Cluster Resources
+  - ClusterRole v1 rbac.authorization.k8s.io
+    - [ ] Element
+  - ClusterRoleBinding v1 rbac.authorization.k8s.io
+    - [ ] Element
+  - Role v1 rbac.authorization.k8s.io
+    - [ ] Element
+  - RoleBinding v1 rbac.authorization.k8s.io
+    - [ ] Element
+  - ServiceAccount v1 core
+    - [ ] Element
+  - NetworkPolicy v1 networking.k8s.io
+    - [ ] Element
