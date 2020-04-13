@@ -70,35 +70,55 @@ In your favorite way.
   - DaemonSet v1 apps
     - [ ] Element
     - [ ] Link to Pod
+      - [ ] .spec.selector.matchLabels
   - Deployment v1 apps
     - [x] Element
     - [x] Link to ReplicaSet
+      - [x] .spec.selector.matchLabels
   - Job v1 batch
     - [x] Element
     - [x] Link to Pod
   - Pod v1 core
     - [x] Element
     - [x] Link to ConfigMap
+      - [x] .spec.volumes.configMap
+      - [x] .spec.volumes.projected.sources.configMap
     - [x] Link to Secret
+      - [x] .spec.volumes.secret
+      - [x] .spec.volumes.projected.sources.secret
+    - [ ] Link to PersistentVolumeClaim
+      - [ ] .spec.volumes.persistentVolumeClaim
+      - [ ] .spec.volumes.projected.sources.persistentVolumeClaim
     - [ ] Link to ServiceAccount
+      - [ ] .spec.serviceAccountName
   - ReplicaSet v1 apps
     - [x] Element
     - [x] Link to Pod
+      - [x] .spec.selector.matchLabels
   - ReplicationController v1 core
     - [ ] Element
     - [ ] Link to Pod
+      - [ ] .spec.selector.matchLabels
   - StatefulSet v1 apps
     - [x] Element
     - [x] Link to Pod
+      - [x] .spec.selector.matchLabels
 - Service Resources
   - Endpoints v1 core
     - [ ] Element
   - Ingress v1beta1 networking.k8s.io
     - [x] Element
     - [x] Link to Service
+      - [x] .spec.backend.serviceName
+      - [x] .spec.backend.servicePort
+      - [x] .spec.rules.http.paths.backend.serviceName
+      - [x] .spec.rules.http.paths.backend.servicePort
   - Service v1 core
     - [x] Element
     - [x] Link to Pod
+      - [x] .spec.selector
+    - [ ] Link to Endpoint
+      - [ ] .metadata.name
 - Config And Storage Resource
   - ConfigMap v1 core
     - [x] Element
